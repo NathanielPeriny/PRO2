@@ -5,6 +5,7 @@ import os
 import time
 import numpy as np
 import pandas as pd
+import joblib
 from matplotlib.figure import Figure
 from sklearn.linear_model import LinearRegression # le modele
 from sklearn.model_selection import train_test_split # ca split les donnees
@@ -13,6 +14,8 @@ from donnees import COLONNE_CIBLE, DOSSIER_FIGURES, charger_donnees, nettoyer_do
 
 GRAINE = 42             # graine (seed) fixe : le split est random mais separation est toujours la meme (le meme random a chaque fois)
 PROPORTION_TEST = 0.2   # 20 % des lignes servent au test
+DOSSIER_MODELES = os.path.join(os.path.dirname(__file__), "..", "modeles")
+NOM_FICHIER_MODELE = "modele_gpa.joblib"
 
 def chronometrer(fonction):
     """Decorateur qui mesure la duree d'execution d'une fonction.
@@ -137,6 +140,20 @@ class Modele:
         axe.legend()
         figure.tight_layout()
         return figure
+    
+    def sauvegarder(self, dossier: str = DOSSIER_MODELES) -> str:
+        """Enregistre la regression entrainee dans un fichier joblib.
+
+           dossier : dossier de destination (cree s'il n'existe pas).
+           Retourne le chemin du fichier cree.
+           Leve RuntimeError si le modele n'est pas encore entraine.
+           """
+        if not self._est_entraine:
+            raise RuntimeError("Entrainer le modele avant de le sauvegarder.")
+        os.makedirs(dossier, exist_ok=True)
+        chemin_modele = os.path.join(dossier, NOM_FICHIER_MODELE)
+        joblib.dump(self._regression, chemin_modele)
+        return chemin_modele    
 
 
     
@@ -155,8 +172,10 @@ if __name__ == "__main__":
     print("MAE du modele     :", round(resultats["mae_modele"], 3))
     print("MAE de reference  :", round(resultats["mae_reference"], 3))
     print("Amelioration      :", round(resultats["amelioration_pct"], 1), "%")    
-    
+
     os.makedirs(DOSSIER_FIGURES, exist_ok=True)
     chemin_figure = os.path.join(DOSSIER_FIGURES, "predit_contre_reel.png")
     modele.creer_figure_predit_reel().savefig(chemin_figure, dpi=150)
+
     print("Graphique enregistre :", chemin_figure)
+    print("Modele enregistre :", modele.sauvegarder())

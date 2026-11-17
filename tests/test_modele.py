@@ -2,6 +2,8 @@
 
 import numpy as np
 import pytest
+import os 
+import joblib
 from sklearn.metrics import mean_absolute_error
 
 from donnees import charger_donnees, nettoyer_donnees
@@ -59,3 +61,20 @@ def test_figure_predit_reel(modele_entraine):
     assert axe.get_xlabel() == "GPA reel"
     assert axe.get_ylabel() == "GPA predit"
     assert axe.get_legend() is not None
+
+
+def test_sauvegarder_puis_recharger(modele_entraine, tmp_path):
+    """Le modele recharge depuis le fichier predit exactement la meme chose."""
+    chemin = modele_entraine.sauvegarder(str(tmp_path))
+    assert os.path.exists(chemin)
+    recharge = joblib.load(chemin)
+    attendu = modele_entraine.predire_test()
+    obtenu = recharge.predict(modele_entraine._x_test)
+    assert obtenu == pytest.approx(attendu)
+
+
+def test_sauvegarder_avant_entrainement(tmp_path):
+    """Sauvegarder un modele pas entraine leve RuntimeError (cas d'erreur)."""
+    modele = Modele(nettoyer_donnees(charger_donnees()))
+    with pytest.raises(RuntimeError):
+        modele.sauvegarder(str(tmp_path))
