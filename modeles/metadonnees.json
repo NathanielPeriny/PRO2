@@ -1,0 +1,83 @@
+{
+  "cible": "Academic_Performance_GPA",
+  "variables": [
+    {
+      "nom": "Age",
+      "description": "Age (ans)",
+      "type": "numerique",
+      "min": 15.0,
+      "max": 26.0
+    },
+    {
+      "nom": "Academic_Level",
+      "description": "Niveau d'etudes",
+      "type": "categorielle",
+      "choix": [
+        "High School",
+        "Postgraduate",
+        "Undergraduate"
+      ]
+    },
+    {
+      "nom": "Primary_Platform",
+      "description": "Reseau social principal",
+      "type": "categorielle",
+      "choix": [
+        "Instagram",
+        "LinkedIn",
+        "Reddit",
+        "Snapchat",
+        "TikTok",
+        "X (Twitter)",
+        "YouTube"
+      ]
+    },
+    {
+      "nom": "Daily_Usage_Hours",
+      "description": "Heures par jour sur les reseaux sociaux",
+      "type": "numerique",
+      "min": 0.9,
+      "max": 14.0
+    },
+    {
+      "nom": "Sleep_Duration_Hours",
+      "description": "Heures de sommeil par nuit",
+      "type": "numerique",
+      "min": 3.0,
+      "max": 10.5
+    },
+    {
+      "nom": "Sleep_Quality_Score",
+      "description": "Qualite du sommeil (1 a 5)",
+      "type": "numerique",
+      "min": 1.0,
+      "max": 5.0
+    },
+    {
+      "nom": "Perceived_Stress_Score",
+      "description": "Score de stress percu",
+      "type": "numerique",
+      "min": 0.0,
+      "max": 40.0
+    }
+  ],
+  "colonnes_modele": [
+    "Age",
+    "Daily_Usage_Hours",
+    "Sleep_Duration_Hours",
+    "Sleep_Quality_Score",
+    "Perceived_Stress_Score",
+    "Academic_Level_High School",
+    "Academic_Level_Postgraduate",
+    "Academic_Level_Undergraduate",
+    "Primary_Platform_Instagram",
+    "Primary_Platform_LinkedIn",
+    "Primary_Platform_Reddit",
+    "Primary_Platform_Snapchat",
+    "Primary_Platform_TikTok",
+    "Primary_Platform_X (Twitter)",
+    "Primary_Platform_YouTube"
+  ],
+  "mae_modele": 0.21760387351369745,
+  "mae_reference": 0.33182876121120086
+}

@@ -1,6 +1,7 @@
 """Entrainement et evaluation du modele de prediction du GPA"""
 
 import functools
+import json
 import os
 import time
 import numpy as np
@@ -16,6 +17,18 @@ GRAINE = 42             # graine (seed) fixe : le split est random mais separati
 PROPORTION_TEST = 0.2   # 20 % des lignes servent au test
 DOSSIER_MODELES = os.path.join(os.path.dirname(__file__), "..", "modeles")
 NOM_FICHIER_MODELE = "modele_gpa.joblib"
+NOM_FICHIER_METADONNEES = "metadonnees.json"
+
+# Texte affiche a l'utilisateur pour chaque colonne (description des Variable)
+DESCRIPTIONS = {
+    "Age": "Age (ans)",
+    "Academic_Level": "Niveau d'etudes",
+    "Primary_Platform": "Reseau social principal",
+    "Daily_Usage_Hours": "Heures par jour sur les reseaux sociaux",
+    "Sleep_Duration_Hours": "Heures de sommeil par nuit",
+    "Sleep_Quality_Score": "Qualite du sommeil (1 a 5)",
+    "Perceived_Stress_Score": "Score de stress percu",
+}
 
 def chronometrer(fonction):
     """Decorateur qui mesure la duree d'execution d'une fonction.
@@ -47,6 +60,18 @@ def calculer_mae(y_reel: np.ndarray, y_predit: np.ndarray) -> float:
     # np.abs enleve le signe puisqu'on regarde seulement si un ecart est trop grand peut importe la direction (haut ou bas)
     # np.mean donne la moyenne (mean)
     # float() retourne un nombre Python normal
+
+def charger_metadonnees(chemin: str) -> dict:
+    """Lit le fichier JSON de metadonnees.
+
+       chemin : chemin du fichier JSON.
+       Retourne son contenu sous forme de dictionnaire.
+       Leve FileNotFoundError si le fichier n'existe pas.
+       """
+    if not os.path.exists(chemin):
+        raise FileNotFoundError(f"Fichier introuvable : {chemin}")
+    with open(chemin, encoding="utf-8") as fichier:
+        return json.load(fichier)
 
 class Modele:
     """Regression lineaire qui predit le GPA a partir des habitudes"""
@@ -154,6 +179,48 @@ class Modele:
         chemin_modele = os.path.join(dossier, NOM_FICHIER_MODELE)
         joblib.dump(self._regression, chemin_modele)
         return chemin_modele    
+    def decrire_variables(self) -> list[dict]:
+        """Decrit chaque variable d'entree pour construire l'interface.
+
+           Retourne une liste de dictionnaires : pour une variable numerique
+           {nom, description, type: "numerique", min, max} ; pour une variable
+           categorielle {nom, description, type: "categorielle", choix}.
+           """
+        variables = []
+        for nom in self._donnees.columns.drop(COLONNE_CIBLE):
+            colonne = self._donnees[nom]
+            description = DESCRIPTIONS.get(nom, nom)
+            if pd.api.types.is_numeric_dtype(colonne):
+                variables.append({"nom": nom, "description": description,
+                                  "type": "numerique",
+                                  "min": float(colonne.min()),
+                                  "max": float(colonne.max())})
+            else:
+                choix = sorted(str(valeur) for valeur in colonne.unique())
+                variables.append({"nom": nom, "description": description,
+                                  "type": "categorielle", "choix": choix})
+        return variables
+
+    def sauvegarder_metadonnees(self, dossier: str = DOSSIER_MODELES) -> str:
+        """Ecrit le fichier JSON de metadonnees du modele.
+
+           dossier : dossier de destination (cree s'il n'existe pas).
+           Retourne le chemin du fichier cree.
+           Leve RuntimeError si le modele n'est pas encore entraine.
+           """
+        resultats = self.evaluer()
+        metadonnees = {
+            "cible": COLONNE_CIBLE,
+            "variables": self.decrire_variables(),
+            "colonnes_modele": self._colonnes,
+            "mae_modele": resultats["mae_modele"],
+            "mae_reference": resultats["mae_reference"],
+        }
+        os.makedirs(dossier, exist_ok=True)
+        chemin_json = os.path.join(dossier, NOM_FICHIER_METADONNEES)
+        with open(chemin_json, "w", encoding="utf-8") as fichier:
+            json.dump(metadonnees, fichier, ensure_ascii=False, indent=2)
+        return chemin_json   
 
 
     
@@ -179,3 +246,4 @@ if __name__ == "__main__":
 
     print("Graphique enregistre :", chemin_figure)
     print("Modele enregistre :", modele.sauvegarder())
+    print("Metadonnees enregistrees :", modele.sauvegarder_metadonnees())

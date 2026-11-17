@@ -7,7 +7,7 @@ import joblib
 from sklearn.metrics import mean_absolute_error
 
 from donnees import charger_donnees, nettoyer_donnees
-from modele import Modele, calculer_mae, chronometrer
+from modele import Modele, calculer_mae, charger_metadonnees, chronometrer
 
 
 def test_mae_valeur_connue():
@@ -78,3 +78,27 @@ def test_sauvegarder_avant_entrainement(tmp_path):
     modele = Modele(nettoyer_donnees(charger_donnees()))
     with pytest.raises(RuntimeError):
         modele.sauvegarder(str(tmp_path))
+
+
+def test_json_contient_les_bonnes_cles(modele_entraine, tmp_path):
+    """Le JSON contient la cible, les variables, les colonnes et les MAE."""
+    meta = charger_metadonnees(modele_entraine.sauvegarder_metadonnees(str(tmp_path)))
+    for cle in ("cible", "variables", "colonnes_modele", "mae_modele", "mae_reference"):
+        assert cle in meta
+
+
+def test_json_decrit_bien_les_variables(modele_entraine, tmp_path):
+    """Chaque type de variable est decrit correctement, sans la cible."""
+    meta = charger_metadonnees(modele_entraine.sauvegarder_metadonnees(str(tmp_path)))
+    variables = {v["nom"]: v for v in meta["variables"]}
+    assert variables["Daily_Usage_Hours"]["type"] == "numerique"
+    assert variables["Daily_Usage_Hours"]["min"] <= variables["Daily_Usage_Hours"]["max"]
+    assert variables["Primary_Platform"]["type"] == "categorielle"
+    assert "TikTok" in variables["Primary_Platform"]["choix"]
+    assert "Academic_Performance_GPA" not in variables
+
+
+def test_charger_metadonnees_absent(tmp_path):
+    """Un fichier de metadonnees absent leve FileNotFoundError."""
+    with pytest.raises(FileNotFoundError):
+        charger_metadonnees(os.path.join(str(tmp_path), "absent.json"))
