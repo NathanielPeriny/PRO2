@@ -1,5 +1,7 @@
 """Entrainement et evaluation du modele de prediction du GPA"""
 
+import functools
+import time
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression # le modele
@@ -9,6 +11,22 @@ from donnees import COLONNE_CIBLE, charger_donnees, nettoyer_donnees
 
 GRAINE = 42             # graine (seed) fixe : le split est random mais separation est toujours la meme (le meme random a chaque fois)
 PROPORTION_TEST = 0.2   # 20 % des lignes servent au test
+
+def chronometrer(fonction):
+    """Decorateur qui mesure la duree d'execution d'une fonction.
+
+       fonction : la fonction a chronometrer.
+       Retourne une fonction enveloppe qui appelle fonction, affiche sa
+       duree dans la console et retourne son resultat sans le modifier.
+       """
+    @functools.wraps(fonction)
+    def enveloppe(*args, **kwargs):
+        debut = time.perf_counter()
+        resultat = fonction(*args, **kwargs)
+        duree = time.perf_counter() - debut
+        print(f"[chronometrer] {fonction.__name__} : {duree:.3f} s")
+        return resultat
+    return enveloppe
 
 def calculer_mae(y_reel: np.ndarray, y_predit: np.ndarray) -> float:
     """Erreur absolue moyenne, calculee avec NumPy (sans boucle).
@@ -57,7 +75,8 @@ class Modele:
         # train_test_split mélange et coupe les donnees en 80% entrainement et 20% test (comme deux simule pratiques vs le vrai CP1)
         # self._moyenne_reference : le modele paresseux de base va toujours deviner cette valeur, Lucas va faire evaluer() pour voir
         # notre modele est plus precis
-
+        
+    @chronometrer
     def entrainer(self) -> None:
         """Entraine la regression lineaire sur l'ensemble d'entrainement."""
         self._regression.fit(self._x_entrainement, self._y_entrainement) # fit est l'entrainement

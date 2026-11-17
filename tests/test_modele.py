@@ -5,7 +5,7 @@ import pytest
 from sklearn.metrics import mean_absolute_error
 
 from donnees import charger_donnees, nettoyer_donnees
-from modele import Modele, calculer_mae
+from modele import Modele, calculer_mae, chronometrer
 
 
 def test_mae_valeur_connue():
@@ -41,3 +41,12 @@ def test_evaluer_avant_entrainement():
     modele.preparer()
     with pytest.raises(RuntimeError):
         modele.evaluer()
+
+def test_chronometrer_garde_resultat_et_nom():
+    """Le decorateur ne change ni le resultat ni le nom de la fonction."""
+    @chronometrer
+    def additionner(a, b):
+        return a + b
+
+    assert additionner(2, 3) == 5
+    assert additionner.__name__ == "additionner"
