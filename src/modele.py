@@ -37,6 +37,7 @@ class Modele:
         self._y_entrainement = None
         self._y_test = None
         self._moyenne_reference = None
+        self._est_entraine = False
 
     def preparer(self) -> None:
         """Transforme les categories en colonnes 0/1 et separe entrainement / test.
@@ -60,13 +61,38 @@ class Modele:
     def entrainer(self) -> None:
         """Entraine la regression lineaire sur l'ensemble d'entrainement."""
         self._regression.fit(self._x_entrainement, self._y_entrainement) # fit est l'entrainement
-        # scikit-learn trouve les meilleures ponderation (a quelle pourcentage chaque covariable, 
-        # fit recoit seulement
-        # les donnees d'entrainement (80%) des donnees coupées par train_test_split, 
-        # si le modele voyait les donnees test
-        # c'est comme lui donner les reponses d'examen avant l'examen
-        # au lieu de lui faire passer la simule seulement)
+        self._est_entraine = True
 
+    def predire_test(self) -> np.ndarray:
+        """Predit le GPA de chaque ligne de l'ensemble de test.
+
+           Retourne un tableau NumPy de GPA predits.
+           Leve RuntimeError si le modele n'est pas encore entraine.
+           """
+        if not self._est_entraine:
+            raise RuntimeError("Appeler preparer() puis entrainer() avant de predire.")
+        return self._regression.predict(self._x_test)
+    
+    def evaluer(self) -> dict[str, float]:
+        """Compare la MAE du modele a celle de la reference, sur le test.
+
+           Retourne un dictionnaire avec mae_modele, mae_reference et
+           amelioration_pct (baisse de l'erreur en %, positive si le modele
+           fait mieux que la reference).
+           Leve RuntimeError si le modele n'est pas encore entraine.
+           """
+        y_predit = self.predire_test()
+        y_reference = np.full(len(self._y_test), self._moyenne_reference)
+        mae_modele = calculer_mae(self._y_test, y_predit)
+        mae_reference = calculer_mae(self._y_test, y_reference)
+        amelioration = 0.0
+        if mae_reference > 0:
+            amelioration = 100 * (mae_reference - mae_modele) / mae_reference
+        return {
+            "mae_modele": mae_modele,
+            "mae_reference": mae_reference,
+            "amelioration_pct": amelioration,
+        }
 
 if __name__ == "__main__":
     modele = Modele(nettoyer_donnees(charger_donnees())) # le modele utilise les donnees qu'on veut qu'il utilise
@@ -79,6 +105,8 @@ if __name__ == "__main__":
     for colonne, poids in zip(modele._colonnes, modele._regression.coef_): #coef est le poids (pondération)
         print(f"{colonne:40} {poids:+.3f}")
 
-    y_predit = modele._regression.predict(modele._x_test)
-    print("MAE du modele sur le test :", round(calculer_mae(modele._y_test, y_predit), 3)) # gpa testé et prédit
+    resultats = modele.evaluer()
+    print("MAE du modele     :", round(resultats["mae_modele"], 3))
+    print("MAE de reference  :", round(resultats["mae_reference"], 3))
+    print("Amelioration      :", round(resultats["amelioration_pct"], 1), "%")    
 

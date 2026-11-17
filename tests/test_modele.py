@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from sklearn.metrics import mean_absolute_error
 
-from modele import calculer_mae
+from donnees import charger_donnees, nettoyer_donnees
+from modele import Modele, calculer_mae
 
 
 def test_mae_valeur_connue():
@@ -17,3 +18,26 @@ def test_mae_egale_scikit_learn():
     reel = np.array([2.0, 3.0, 3.5, 4.0])
     predit = np.array([2.5, 2.9, 3.0, 3.8])
     assert calculer_mae(reel, predit) == pytest.approx(mean_absolute_error(reel, predit))
+
+@pytest.fixture
+def modele_entraine():
+    """Modele prepare et entraine sur le vrai jeu de donnees."""
+    modele = Modele(nettoyer_donnees(charger_donnees()))
+    modele.preparer()
+    modele.entrainer()
+    return modele
+
+
+def test_modele_bat_la_reference(modele_entraine):
+    """Le modele se trompe moins que s'il predisait toujours le GPA moyen."""
+    resultats = modele_entraine.evaluer()
+    assert resultats["mae_modele"] < resultats["mae_reference"]
+    assert resultats["amelioration_pct"] > 0
+
+
+def test_evaluer_avant_entrainement():
+    """Evaluer un modele pas encore entraine leve RuntimeError (cas d'erreur)."""
+    modele = Modele(nettoyer_donnees(charger_donnees()))
+    modele.preparer()
+    with pytest.raises(RuntimeError):
+        modele.evaluer()
