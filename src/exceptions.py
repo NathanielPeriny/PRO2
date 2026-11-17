@@ -1,4 +1,4 @@
-"""Exceptions du projet"""
+"""Exceptions du projet""" #custom errors
 
 class ProjetError(Exception):
     """Erreur de base du projet"""

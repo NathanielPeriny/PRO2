@@ -33,7 +33,7 @@ def nettoyer_donnees(df: pd.DataFrame) -> pd.DataFrame:
        par la mediane.
        """
     df = df.drop(columns=COLONNES_RETIREES)
-    df = df.dropna(subset=[COLONNE_CIBLE]).copy()
+    df = df.dropna(subset=[COLONNE_CIBLE]).copy() #na = pas de donnée
     mediane_stress = df["Perceived_Stress_Score"].median()
     df["Perceived_Stress_Score"] = df["Perceived_Stress_Score"].fillna(mediane_stress)
     return df
@@ -56,8 +56,8 @@ def tracer_exploration(df: pd.DataFrame, chemin_sortie: str) -> None:
     x_droite = np.linspace(x.min(), x.max(), 100)
     y_droite = pente * x_droite + ordonnee
 
-    fig, ax = plt.subplots()
-    ax.scatter(x, y, alpha=0.3, s=10, label="Etudiants")
+    """fig, ax = plt.subplots()
+    ax.scatter(x, y, alpha=0.3, s=10, color="blue", label="Etudiants") #y selon x (GPA, heures)
     ax.plot(x_droite, y_droite, color="red", linewidth=2,
             label=f"Tendance : {pente:.2f} point de GPA par heure")
     ax.set_title("GPA selon le temps passe sur les reseaux sociaux")
@@ -65,14 +65,25 @@ def tracer_exploration(df: pd.DataFrame, chemin_sortie: str) -> None:
     ax.set_ylabel("GPA")
     ax.legend()
     fig.savefig(chemin_sortie)
-    plt.close(fig)
+    #plt.show()
+    plt.close(fig) """ 
+
+    plt.scatter(x, y, alpha=0.2, s=12, color="blue", label="Étudiants")
+    plt.plot(x_droite, y_droite, color="red", linewidth=2, label=f"Tendance : {pente:.2f} poit de GPA par heure")
+    plt.title("GPA selon le temps passe sur les reseaux sociaux")
+    plt.xlabel("Heures par jour sur les reseaux sociaux")
+    plt.ylabel("GPA")
+    plt.legend()
+    plt.savefig(chemin_sortie)
+    plt.show()
+
 
 
 if __name__ == "__main__":
     donnees = charger_donnees()
     print("Avant nettoyage :", donnees.shape)
     print("Valeurs manquantes :")
-    print(donnees.isna().sum())
+    print(donnees.isna().sum()) #nombre de données manquantes
     print(donnees.describe().T)   # .T : une ligne par colonne, plus lisible
 
     propres = nettoyer_donnees(donnees)
@@ -80,6 +91,6 @@ if __name__ == "__main__":
 
     if not os.path.exists(DOSSIER_FIGURES):
         os.mkdir(DOSSIER_FIGURES)
-    chemin_figure = os.path.join(DOSSIER_FIGURES, "exploration_gpa.png")
+    chemin_figure = os.path.join(DOSSIER_FIGURES, "exploration_gpa.png") 
     tracer_exploration(propres, chemin_figure)
     print("Graphique enregistre :", chemin_figure)

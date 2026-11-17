@@ -26,7 +26,7 @@ class Variable(ABC):
         """Texte affiche a l'utilisateur (lecture seule)."""
         return self._description
 
-    @abstractmethod
+    @abstractmethod  #oblique le __str__ a prendre ce que l'utilisateur ecrit (texte)
     def valider(self, texte: str):
         """Verifie la saisie et retourne la valeur convertie.
 
@@ -66,7 +66,7 @@ class VariableNumerique(Variable):
         return valeur
 
     def __repr__(self) -> str:
-        return f"VariableNumerique({self._nom!r}, {self._minimum}, {self._maximum})" #met des "" autour du nom
+        return f"VariableNumerique({self._nom!r}, {self._minimum}, {self._maximum})" # !r met des "" autour du nom
 
 
 class VariableCategorielle(Variable):
@@ -85,8 +85,8 @@ class VariableCategorielle(Variable):
         """Verifie que le texte fait partie des choix permis et le retourne et leve DonneeInvalideError sinon"""
 
         if texte not in self._choix:
-            raise DonneeInvalideError(f"{self._description} : choisissez une valeur dans la liste.")
+            raise DonneeInvalideError(f"{self._description} : choisissez un des choix dans la liste.")
         return texte
 
     def __repr__(self) -> str:
-        return f"VariableCategorielle({self._nom!r}, {self._choix})"
+        return f"VariableCategorielle({self._nom!r}, {self._choix})" #donne liste

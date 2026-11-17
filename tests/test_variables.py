@@ -4,7 +4,7 @@ import pytest
 from exceptions import DonneeInvalideError
 from variables import Variable, VariableCategorielle, VariableNumerique
 
-@pytest.fixture
+@pytest.fixture #pas besoin de creer heures pour chaque test, ils le recoivent automatiquement comme parametre
 def heures():
     return VariableNumerique("Daily_Usage_Hours", "Heures/jour", 0, 24)
 
@@ -18,7 +18,6 @@ def test_numerique_limite_acceptee(heures):
     """Les bornes elles-memes sont acceptees (cas limite)."""
     assert heures.valider("0") == 0.0
     assert heures.valider("24") == 24.0 #cas limite
-
 
 def test_numerique_texte_refuse(heures):
     """Un texte qui n'est pas un nombre leve DonneeInvalideError."""
@@ -38,6 +37,8 @@ def test_categorielle_choix_inconnu():
     assert plateforme.valider("TikTok") == "TikTok"
     with pytest.raises(DonneeInvalideError):
         plateforme.valider("MySpace") #cas erreur
+
+    # on aurait pu utiliser fixture pour plateforme aussi mais on utilise plateforme dans un seul test donc ça vaut pas la peine
 
 
 def test_variable_abstraite():
