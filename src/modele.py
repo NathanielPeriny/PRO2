@@ -1,13 +1,15 @@
 """Entrainement et evaluation du modele de prediction du GPA"""
 
 import functools
+import os
 import time
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 from sklearn.linear_model import LinearRegression # le modele
 from sklearn.model_selection import train_test_split # ca split les donnees
 
-from donnees import COLONNE_CIBLE, charger_donnees, nettoyer_donnees
+from donnees import COLONNE_CIBLE, DOSSIER_FIGURES, charger_donnees, nettoyer_donnees
 
 GRAINE = 42             # graine (seed) fixe : le split est random mais separation est toujours la meme (le meme random a chaque fois)
 PROPORTION_TEST = 0.2   # 20 % des lignes servent au test
@@ -75,7 +77,7 @@ class Modele:
         # train_test_split mélange et coupe les donnees en 80% entrainement et 20% test (comme deux simule pratiques vs le vrai CP1)
         # self._moyenne_reference : le modele paresseux de base va toujours deviner cette valeur, Lucas va faire evaluer() pour voir
         # notre modele est plus precis
-        
+
     @chronometrer
     def entrainer(self) -> None:
         """Entraine la regression lineaire sur l'ensemble d'entrainement."""
@@ -112,7 +114,32 @@ class Modele:
             "mae_reference": mae_reference,
             "amelioration_pct": amelioration,
         }
+    def creer_figure_predit_reel(self) -> Figure:
+        """Cree le graphique GPA predit contre GPA reel sur l'ensemble de test.
 
+           Retourne une figure Matplotlib avec titre, axes etiquetes et legende.
+           Leve RuntimeError si le modele n'est pas encore entraine.
+           """
+        y_predit = self.predire_test()
+        y_reel = np.asarray(self._y_test, dtype=float)
+        mae = calculer_mae(y_reel, y_predit)
+
+        figure = Figure(figsize=(6, 5))
+        axe = figure.add_subplot()
+        axe.scatter(y_reel, y_predit, alpha=0.4, s=15, label="Etudiants du test")
+        bornes = [min(y_reel.min(), y_predit.min()), max(y_reel.max(), y_predit.max())]
+        axe.plot(bornes, bornes, color="red", linestyle="--", label="Prediction parfaite")
+        axe.axhline(self._moyenne_reference, color="gray", linestyle=":",
+                    label=f"Reference (moyenne = {self._moyenne_reference:.2f})")
+        axe.set_title(f"GPA predit contre GPA reel (MAE = {mae:.3f})")
+        axe.set_xlabel("GPA reel")
+        axe.set_ylabel("GPA predit")
+        axe.legend()
+        figure.tight_layout()
+        return figure
+
+
+    
 if __name__ == "__main__":
     modele = Modele(nettoyer_donnees(charger_donnees())) # le modele utilise les donnees qu'on veut qu'il utilise
     modele.preparer() # appelle la methode
@@ -128,4 +155,8 @@ if __name__ == "__main__":
     print("MAE du modele     :", round(resultats["mae_modele"], 3))
     print("MAE de reference  :", round(resultats["mae_reference"], 3))
     print("Amelioration      :", round(resultats["amelioration_pct"], 1), "%")    
-
+    
+    os.makedirs(DOSSIER_FIGURES, exist_ok=True)
+    chemin_figure = os.path.join(DOSSIER_FIGURES, "predit_contre_reel.png")
+    modele.creer_figure_predit_reel().savefig(chemin_figure, dpi=150)
+    print("Graphique enregistre :", chemin_figure)

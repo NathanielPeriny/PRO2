@@ -50,3 +50,12 @@ def test_chronometrer_garde_resultat_et_nom():
 
     assert additionner(2, 3) == 5
     assert additionner.__name__ == "additionner"
+
+
+def test_figure_predit_reel(modele_entraine):
+    """Le graphique a un titre, des axes etiquetes et une legende."""
+    axe = modele_entraine.creer_figure_predit_reel().axes[0]
+    assert axe.get_title() != ""
+    assert axe.get_xlabel() == "GPA reel"
+    assert axe.get_ylabel() == "GPA predit"
+    assert axe.get_legend() is not None
