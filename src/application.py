@@ -3,11 +3,15 @@
 import os
 
 import joblib
+import numpy as np
+import pandas as pd
 
 from modele import (DOSSIER_MODELES, NOM_FICHIER_METADONNEES, NOM_FICHIER_MODELE,
                     charger_metadonnees)
 from variables import Variable, VariableCategorielle, VariableNumerique
 
+GPA_MIN = 0.0
+GPA_MAX = 4.0
 
 def creer_variable(description: dict) -> Variable:
     """Cree la bonne sorte de Variable a partir de sa description JSON.
@@ -48,6 +52,32 @@ class Application:
     def mae(self) -> float:
         """Erreur moyenne du modele sur le test (pour l'afficher a l'utilisateur)."""
         return self._metadonnees["mae_modele"]
+
+    def valider_saisies(self, saisies: dict[str, str]) -> dict:
+        """Valide chaque saisie avec la Variable correspondante.
+
+           saisies : {nom de colonne: texte tape ou choisi par l'utilisateur}.
+           Retourne {nom de colonne: valeur convertie (float ou str)}.
+           Leve DonneeInvalideError a la premiere saisie vide, non numerique,
+           hors intervalle ou hors des choix permis.
+           """
+        valeurs = {}
+        for variable in self._variables:
+            valeurs[variable.nom] = variable.valider(saisies.get(variable.nom, ""))
+        return valeurs
+
+    def predire(self, saisies: dict[str, str]) -> float:
+        """Valide les saisies et predit le GPA, limite entre GPA_MIN et GPA_MAX.
+
+           saisies : {nom de colonne: texte tape ou choisi par l'utilisateur}.
+           Retourne le GPA estime.
+           Leve DonneeInvalideError si une saisie est invalide.
+           """
+        valeurs = self.valider_saisies(saisies)
+        ligne = pd.get_dummies(pd.DataFrame([valeurs]), dtype=float)
+        ligne = ligne.reindex(columns=self._metadonnees["colonnes_modele"], fill_value=0.0)
+        gpa = float(self._regression.predict(ligne)[0])
+        return float(np.clip(gpa, GPA_MIN, GPA_MAX))
 
     def __repr__(self) -> str:
         return f"Application({len(self._variables)} variables, MAE={self.mae:.3f})"
