@@ -1,8 +1,7 @@
 """Interface graphique Tkinter : affiche et appelle Application, sans calculs."""
 
 import tkinter as tk
-from tkinter import ttk
-
+from tkinter import messagebox, ttk
 from application import Application
 from variables import VariableCategorielle
 from exceptions import DonneeInvalideError
@@ -45,8 +44,10 @@ class Interface:
         cadre.grid(row=1, column=0, sticky="nsew")
         bouton = ttk.Button(cadre, text="Prédire", command=self._au_clic_predire)
         bouton.grid(row=0, column=0, sticky="w")
+        bouton_historique = ttk.Button(cadre, text="Voir l'historique", command=self._afficher_historique)
+        bouton_historique.grid(row=0, column=1, sticky="w", padx=(10, 0))
         self._etiquette_resultat = ttk.Label(cadre, text="", wraplength=380, justify="left")
-        self._etiquette_resultat.grid(row=1, column=0, sticky="w", pady=(10, 0))
+        self._etiquette_resultat.grid(row=1, column=0, columnspan=2, sticky="w", pady=(10, 0))
 
     def _au_clic_predire(self) -> None:
         """Lit les champs, predit et affiche le resultat ou l'erreur en rouge."""
@@ -58,7 +59,23 @@ class Interface:
         self._etiquette_resultat.config(text=self._application.decrire_resultat(gpa),
                                         foreground="black")
         self._afficher_graphique(gpa)
-        
+
+    def _au_clic_predire(self) -> None:
+        """Lit les champs, predit, enregistre et affiche le resultat ou l'erreur en rouge."""
+        saisies = self.lire_saisies()
+        try:
+            gpa = self._application.predire(saisies)
+        except DonneeInvalideError as erreur:
+            self._etiquette_resultat.config(text=str(erreur), foreground="red")
+            return
+        self._etiquette_resultat.config(text=self._application.decrire_resultat(gpa),
+                                        foreground="black")
+        self._afficher_graphique(gpa)
+        try:
+            self._application.enregistrer(saisies, gpa)
+        except OSError:
+            messagebox.showwarning("Historique", "La prédiction n'a pas pu être ajoutée à l'historique.")
+
     def _afficher_graphique(self, gpa: float | None = None) -> None:
         """Remplace le graphique de la fenetre par un nouveau (avec le GPA s'il est donne)."""
         if self._canevas is not None:
@@ -67,6 +84,19 @@ class Interface:
         self._canevas = FigureCanvasTkAgg(figure, master=self._racine)
         self._canevas.draw()
         self._canevas.get_tk_widget().grid(row=0, column=1, rowspan=2, padx=10, pady=10)
+   
+    def _afficher_historique(self) -> None:
+        """Ouvre une fenetre avec un tableau des predictions, la plus recente en haut."""
+        historique = self._application.historique
+        fenetre = tk.Toplevel(self._racine)
+        fenetre.title(f"Historique ({len(historique)} prédictions)")
+        tableau = ttk.Treeview(fenetre, columns=historique.colonnes, show="headings", height=12)
+        for colonne in historique.colonnes:
+            tableau.heading(colonne, text=colonne)
+            tableau.column(colonne, width=120, anchor="center")
+        for ligne in historique.lignes():
+            tableau.insert("", 0, values=[ligne[colonne] for colonne in historique.colonnes])
+        tableau.pack(fill="both", expand=True, padx=10, pady=10)
 
     def lire_saisies(self) -> dict[str, str]:
         """Retourne {nom de colonne: texte du champ} pour toutes les variables."""
