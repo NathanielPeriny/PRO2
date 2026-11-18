@@ -67,6 +67,9 @@ class VariableNumerique(Variable):
 
     def __repr__(self) -> str:
         return f"VariableNumerique({self._nom!r}, {self._minimum}, {self._maximum})" # !r met des "" autour du nom
+    
+    def __str__(self) -> str:
+        return f"{self._description} ({self._minimum:g} à {self._maximum:g})"
 
 
 class VariableCategorielle(Variable):

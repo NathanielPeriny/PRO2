@@ -45,3 +45,8 @@ def test_variable_abstraite():
     """On ne peut pas creer une Variable directement : elle est abstraite."""
     with pytest.raises(TypeError):
         Variable("x", "x")
+
+
+def test_numerique_str_affiche_intervalle(heures):
+    """L'etiquette d'une variable numerique montre son intervalle."""
+    assert str(heures) == "Heures/jour (0 à 24)"
