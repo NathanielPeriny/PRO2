@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
+from historique import Historique
 
 from modele import (DOSSIER_MODELES, NOM_FICHIER_METADONNEES, NOM_FICHIER_MODELE,
 charger_metadonnees)
@@ -13,10 +14,10 @@ from donnees import COLONNE_CIBLE, charger_donnees, nettoyer_donnees
 
 from variables import Variable, VariableCategorielle, VariableNumerique
 
-
-
 GPA_MIN = 0.0
 GPA_MAX = 4.0
+CHEMIN_HISTORIQUE = os.path.join(os.path.dirname(__file__), "..", "historique", "historique.csv")
+
 def formater_nombre(valeur: float) -> str:
     """Retourne le nombre avec 2 decimales et une virgule (ex. 3.456 -> "3,46")."""
     return f"{valeur:.2f}".replace(".", ",")
@@ -37,10 +38,11 @@ def creer_variable(description: dict) -> Variable:
 class Application:
     """Contient le modele entraine et la liste des variables (composition)."""
 
-    def __init__(self, dossier: str = DOSSIER_MODELES) -> None:
+    def __init__(self, dossier: str = DOSSIER_MODELES, chemin_historique: str = CHEMIN_HISTORIQUE) -> None:
         """Charge le modele et ses metadonnees depuis le dossier.
 
            dossier : dossier qui contient le .joblib et le .json.
+           chemin_historique : fichier CSV ou enregistrer les predictions.
            Leve FileNotFoundError si un des deux fichiers est absent.
            """
         chemin_modele = os.path.join(dossier, NOM_FICHIER_MODELE)
@@ -51,7 +53,8 @@ class Application:
         self._regression = joblib.load(chemin_modele)
         self._variables = [creer_variable(d) for d in self._metadonnees["variables"]]
         self._gpa_etudiants = nettoyer_donnees(charger_donnees())[COLONNE_CIBLE].to_numpy()
-
+        self._historique = Historique(chemin_historique, [v.nom for v in self._variables])
+    
     @property
     def variables(self) -> list[Variable]:
         """Copie de la liste des variables (pour construire les champs)."""
@@ -61,6 +64,10 @@ class Application:
     def mae(self) -> float:
         """Erreur moyenne du modele sur le test (pour l'afficher a l'utilisateur)."""
         return self._metadonnees["mae_modele"]
+    @property
+    def historique(self) -> Historique:
+        """Historique des predictions (pour l'afficher dans l'interface)."""
+        return self._historique
 
     def valider_saisies(self, saisies: dict[str, str]) -> dict:
         """Valide chaque saisie avec la Variable correspondante.
@@ -87,6 +94,15 @@ class Application:
         ligne = ligne.reindex(columns=self._metadonnees["colonnes_modele"], fill_value=0.0)
         gpa = float(self._regression.predict(ligne)[0])
         return float(np.clip(gpa, GPA_MIN, GPA_MAX))
+    
+    def enregistrer(self, saisies: dict[str, str], gpa: float) -> None:
+        """Ajoute une prediction valide a l'historique.
+
+           saisies : textes de l'utilisateur. gpa : GPA estime par predire().
+           Leve DonneeInvalideError si une saisie est invalide.
+           """
+        self._historique.ajouter(self.valider_saisies(saisies), gpa)
+        
     def decrire_resultat(self, gpa: float) -> str:
         """Explique le GPA estime a un non-informaticien, avec l'erreur moyenne.
 

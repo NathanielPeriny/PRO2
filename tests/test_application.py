@@ -9,9 +9,9 @@ from variables import VariableCategorielle, VariableNumerique
 
 
 @pytest.fixture
-def application():
-    """Application chargee depuis le vrai dossier modeles/."""
-    return Application()
+def application(tmp_path):
+    """Application chargee depuis modeles/, avec un historique temporaire."""
+    return Application(chemin_historique=str(tmp_path / "historique.csv"))
 
 
 def test_application_construit_les_variables(application):
@@ -111,4 +111,10 @@ def test_figure_avec_prediction(application):
     axe = application.creer_figure_distribution(3.5).axes[0]
     assert len(axe.lines) == 1
     assert axe.get_legend() is not None
-    
+
+
+def test_enregistrer_ajoute_une_ligne(application, saisies):
+    """Une prediction enregistree apparait dans l'historique."""
+    gpa = application.predire(saisies)
+    application.enregistrer(saisies, gpa)
+    assert len(application.historique) == 1
