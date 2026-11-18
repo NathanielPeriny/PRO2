@@ -4,7 +4,7 @@ from exceptions import DonneeInvalideError
 
 import pytest
 
-from application import Application, formater_nombre
+from application import AVERTISSEMENT, Application, formater_nombre
 from variables import VariableCategorielle, VariableNumerique
 
 
@@ -118,3 +118,9 @@ def test_enregistrer_ajoute_une_ligne(application, saisies):
     gpa = application.predire(saisies)
     application.enregistrer(saisies, gpa)
     assert len(application.historique) == 1
+
+
+def test_avertissement_present():
+    """L'avertissement precise que l'outil est pedagogique (domaine sante)."""
+    assert "pédagogique" in AVERTISSEMENT
+    assert "pas une aide à la décision" in AVERTISSEMENT

@@ -17,6 +17,12 @@ from variables import Variable, VariableCategorielle, VariableNumerique
 GPA_MIN = 0.0
 GPA_MAX = 4.0
 CHEMIN_HISTORIQUE = os.path.join(os.path.dirname(__file__), "..", "historique", "historique.csv")
+AVERTISSEMENT = (
+    "⚠ Exercice pédagogique (INF1007), pas une aide à la décision. "
+    "Le modèle a appris sur des données probablement synthétiques : il montre des liens "
+    "entre habitudes et GPA, pas des causes. Pour toute question de santé, de sommeil "
+    "ou de stress, consultez un professionnel."
+)
 
 def formater_nombre(valeur: float) -> str:
     """Retourne le nombre avec 2 decimales et une virgule (ex. 3.456 -> "3,46")."""
@@ -102,7 +108,7 @@ class Application:
            Leve DonneeInvalideError si une saisie est invalide.
            """
         self._historique.ajouter(self.valider_saisies(saisies), gpa)
-        
+
     def decrire_resultat(self, gpa: float) -> str:
         """Explique le GPA estime a un non-informaticien, avec l'erreur moyenne.
 

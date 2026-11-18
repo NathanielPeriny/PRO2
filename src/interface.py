@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import messagebox, ttk
-from application import Application
+from application import AVERTISSEMENT, Application
 from variables import VariableCategorielle
 from exceptions import DonneeInvalideError
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -25,6 +25,7 @@ class Interface:
         self._creer_champs()
         self._creer_zone_resultat()
         self._afficher_graphique()
+        self._creer_avertissement()
 
     def _creer_champs(self) -> None:
         """Cree une etiquette et un champ adapte au type de chaque variable."""
@@ -38,6 +39,7 @@ class Interface:
                 champ = ttk.Entry(self._cadre_saisies, width=22)
             champ.grid(row=ligne, column=1, sticky="w", padx=(10, 0), pady=3)
             self._champs[variable.nom] = champ
+
     def _creer_zone_resultat(self) -> None:
         """Cree le bouton Predire et l'etiquette qui affiche le resultat."""
         cadre = ttk.Frame(self._racine, padding=(10, 0, 10, 10))
@@ -48,6 +50,12 @@ class Interface:
         bouton_historique.grid(row=0, column=1, sticky="w", padx=(10, 0))
         self._etiquette_resultat = ttk.Label(cadre, text="", wraplength=380, justify="left")
         self._etiquette_resultat.grid(row=1, column=0, columnspan=2, sticky="w", pady=(10, 0))
+    
+    def _creer_avertissement(self) -> None:
+        """Affiche l'avertissement en bas de la fenetre, sur toute la largeur."""
+        etiquette = ttk.Label(self._racine, text=AVERTISSEMENT, foreground="#a15c00",
+                              wraplength=800, justify="left", padding=10)
+        etiquette.grid(row=2, column=0, columnspan=2, sticky="w")
 
     def _au_clic_predire(self) -> None:
         """Lit les champs, predit et affiche le resultat ou l'erreur en rouge."""
