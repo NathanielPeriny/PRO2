@@ -95,3 +95,20 @@ def test_decrire_resultat(application):
     texte = application.decrire_resultat(3.9)
     assert "3,90 sur 4" in texte
     assert "et 4,00" in texte
+
+
+def test_figure_sans_prediction(application):
+    """Avant toute prediction : histogramme avec titre et axes, sans ligne rouge."""
+    axe = application.creer_figure_distribution().axes[0]
+    assert axe.get_title() != ""
+    assert axe.get_xlabel() == "GPA"
+    assert axe.get_ylabel() == "Nombre d'étudiants"
+    assert len(axe.lines) == 0
+
+
+def test_figure_avec_prediction(application):
+    """Apres une prediction : une ligne rouge et une legende."""
+    axe = application.creer_figure_distribution(3.5).axes[0]
+    assert len(axe.lines) == 1
+    assert axe.get_legend() is not None
+    

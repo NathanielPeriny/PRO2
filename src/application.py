@@ -5,10 +5,15 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 
 from modele import (DOSSIER_MODELES, NOM_FICHIER_METADONNEES, NOM_FICHIER_MODELE,
-                    charger_metadonnees)
+charger_metadonnees)
+from donnees import COLONNE_CIBLE, charger_donnees, nettoyer_donnees
+
 from variables import Variable, VariableCategorielle, VariableNumerique
+
+
 
 GPA_MIN = 0.0
 GPA_MAX = 4.0
@@ -45,6 +50,7 @@ class Application:
         self._metadonnees = charger_metadonnees(os.path.join(dossier, NOM_FICHIER_METADONNEES))
         self._regression = joblib.load(chemin_modele)
         self._variables = [creer_variable(d) for d in self._metadonnees["variables"]]
+        self._gpa_etudiants = nettoyer_donnees(charger_donnees())[COLONNE_CIBLE].to_numpy()
 
     @property
     def variables(self) -> list[Variable]:
@@ -93,6 +99,27 @@ class Application:
                 f"En moyenne, le modèle se trompe de {formater_nombre(self.mae)} point : "
                 f"le vrai GPA se situe souvent entre {formater_nombre(bas)} "
                 f"et {formater_nombre(haut)}.")
+    def creer_figure_distribution(self, gpa: float | None = None) -> Figure:
+        """Histogramme des GPA du jeu de donnees, avec le GPA estime s'il est donne.
+
+           gpa : GPA estime a placer sur le graphique (None avant la 1re prediction).
+           Retourne une figure Matplotlib avec titre, axes etiquetes et legende.
+           """
+        figure = Figure(figsize=(5, 3.5))
+        axe = figure.add_subplot()
+        axe.hist(self._gpa_etudiants, bins=30, color="steelblue", alpha=0.7,
+                 label="Étudiants du jeu de données")
+        if gpa is not None:
+            axe.axvspan(max(GPA_MIN, gpa - self.mae), min(GPA_MAX, gpa + self.mae),
+                        color="red", alpha=0.15, label="Marge d'erreur moyenne")
+            axe.axvline(gpa, color="red", linewidth=2,
+                        label=f"Votre GPA estimé ({formater_nombre(gpa)})")
+        axe.set_title(f"Votre GPA estimé parmi {len(self._gpa_etudiants)} étudiants")
+        axe.set_xlabel("GPA")
+        axe.set_ylabel("Nombre d'étudiants")
+        axe.legend(loc="upper left")
+        figure.tight_layout()
+        return figure
 
     def __repr__(self) -> str:
         return f"Application({len(self._variables)} variables, MAE={self.mae:.3f})"

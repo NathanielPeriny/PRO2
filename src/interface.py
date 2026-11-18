@@ -6,6 +6,7 @@ from tkinter import ttk
 from application import Application
 from variables import VariableCategorielle
 from exceptions import DonneeInvalideError
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Interface:
     """Fenetre principale : un champ par variable du modele."""
@@ -17,12 +18,14 @@ class Interface:
         self._racine = racine
         self._application = application
         self._champs: dict[str, ttk.Widget] = {}
+        self._canevas: FigureCanvasTkAgg | None = None
 
         self._racine.title("Estimation du GPA selon les habitudes")
         self._cadre_saisies = ttk.LabelFrame(self._racine, text="Vos habitudes", padding=10)
         self._cadre_saisies.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self._creer_champs()
         self._creer_zone_resultat()
+        self._afficher_graphique()
 
     def _creer_champs(self) -> None:
         """Cree une etiquette et un champ adapte au type de chaque variable."""
@@ -54,6 +57,16 @@ class Interface:
             return
         self._etiquette_resultat.config(text=self._application.decrire_resultat(gpa),
                                         foreground="black")
+        self._afficher_graphique(gpa)
+        
+    def _afficher_graphique(self, gpa: float | None = None) -> None:
+        """Remplace le graphique de la fenetre par un nouveau (avec le GPA s'il est donne)."""
+        if self._canevas is not None:
+            self._canevas.get_tk_widget().destroy()
+        figure = self._application.creer_figure_distribution(gpa)
+        self._canevas = FigureCanvasTkAgg(figure, master=self._racine)
+        self._canevas.draw()
+        self._canevas.get_tk_widget().grid(row=0, column=1, rowspan=2, padx=10, pady=10)
 
     def lire_saisies(self) -> dict[str, str]:
         """Retourne {nom de colonne: texte du champ} pour toutes les variables."""
