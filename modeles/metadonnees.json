@@ -3,14 +3,14 @@
   "variables": [
     {
       "nom": "Age",
-      "description": "Age (ans)",
+      "description": "Âge en années",
       "type": "numerique",
       "min": 15.0,
       "max": 26.0
     },
     {
       "nom": "Academic_Level",
-      "description": "Niveau d'etudes",
+      "description": "Niveau d'études",
       "type": "categorielle",
       "choix": [
         "High School",
@@ -20,7 +20,7 @@
     },
     {
       "nom": "Primary_Platform",
-      "description": "Reseau social principal",
+      "description": "Réseau social principal",
       "type": "categorielle",
       "choix": [
         "Instagram",
@@ -34,7 +34,7 @@
     },
     {
       "nom": "Daily_Usage_Hours",
-      "description": "Heures par jour sur les reseaux sociaux",
+      "description": "Heures par jour sur les réseaux sociaux",
       "type": "numerique",
       "min": 0.9,
       "max": 14.0
@@ -48,14 +48,14 @@
     },
     {
       "nom": "Sleep_Quality_Score",
-      "description": "Qualite du sommeil (1 a 5)",
+      "description": "Qualité du sommeil",
       "type": "numerique",
       "min": 1.0,
       "max": 5.0
     },
     {
       "nom": "Perceived_Stress_Score",
-      "description": "Score de stress percu",
+      "description": "Score de stress perçu",
       "type": "numerique",
       "min": 0.0,
       "max": 40.0

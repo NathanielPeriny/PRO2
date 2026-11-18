@@ -21,13 +21,14 @@ NOM_FICHIER_METADONNEES = "metadonnees.json"
 
 # Texte affiche a l'utilisateur pour chaque colonne (description des Variable)
 DESCRIPTIONS = {
-    "Age": "Age (ans)",
-    "Academic_Level": "Niveau d'etudes",
-    "Primary_Platform": "Reseau social principal",
-    "Daily_Usage_Hours": "Heures par jour sur les reseaux sociaux",
+    "Age": "Âge en années",
+    "Academic_Level": "Niveau d'études",
+    "Primary_Platform": "Réseau social principal",
+    "Daily_Usage_Hours": "Heures par jour sur les réseaux sociaux",
     "Sleep_Duration_Hours": "Heures de sommeil par nuit",
-    "Sleep_Quality_Score": "Qualite du sommeil (1 a 5)",
-    "Perceived_Stress_Score": "Score de stress percu",
+    "Sleep_Quality_Score": "Qualité du sommeil",
+    "Perceived_Stress_Score": "Score de stress perçu",
+
 }
 
 def chronometrer(fonction):
