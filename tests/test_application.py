@@ -4,7 +4,7 @@ from exceptions import DonneeInvalideError
 
 import pytest
 
-from application import Application
+from application import Application, formater_nombre
 from variables import VariableCategorielle, VariableNumerique
 
 
@@ -83,3 +83,15 @@ def test_predire_categorie_inconnue(application, saisies):
     saisies["Primary_Platform"] = "MySpace"
     with pytest.raises(DonneeInvalideError):
         application.predire(saisies)
+
+
+def test_formater_nombre_virgule():
+    """Les nombres sont affiches avec une virgule et 2 decimales."""
+    assert formater_nombre(3.456) == "3,46"
+
+
+def test_decrire_resultat(application):
+    """Le texte donne le GPA et une marge bornee a 4 (cas limite)."""
+    texte = application.decrire_resultat(3.9)
+    assert "3,90 sur 4" in texte
+    assert "et 4,00" in texte

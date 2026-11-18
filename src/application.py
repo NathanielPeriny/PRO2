@@ -12,6 +12,9 @@ from variables import Variable, VariableCategorielle, VariableNumerique
 
 GPA_MIN = 0.0
 GPA_MAX = 4.0
+def formater_nombre(valeur: float) -> str:
+    """Retourne le nombre avec 2 decimales et une virgule (ex. 3.456 -> "3,46")."""
+    return f"{valeur:.2f}".replace(".", ",")
 
 def creer_variable(description: dict) -> Variable:
     """Cree la bonne sorte de Variable a partir de sa description JSON.
@@ -78,6 +81,18 @@ class Application:
         ligne = ligne.reindex(columns=self._metadonnees["colonnes_modele"], fill_value=0.0)
         gpa = float(self._regression.predict(ligne)[0])
         return float(np.clip(gpa, GPA_MIN, GPA_MAX))
+    def decrire_resultat(self, gpa: float) -> str:
+        """Explique le GPA estime a un non-informaticien, avec l'erreur moyenne.
+
+           gpa : GPA estime par predire().
+           Retourne un texte de deux phrases.
+           """
+        bas = max(GPA_MIN, gpa - self.mae)
+        haut = min(GPA_MAX, gpa + self.mae)
+        return (f"GPA estimé : {formater_nombre(gpa)} sur 4.\n"
+                f"En moyenne, le modèle se trompe de {formater_nombre(self.mae)} point : "
+                f"le vrai GPA se situe souvent entre {formater_nombre(bas)} "
+                f"et {formater_nombre(haut)}.")
 
     def __repr__(self) -> str:
         return f"Application({len(self._variables)} variables, MAE={self.mae:.3f})"

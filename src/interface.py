@@ -5,7 +5,7 @@ from tkinter import ttk
 
 from application import Application
 from variables import VariableCategorielle
-
+from exceptions import DonneeInvalideError
 
 class Interface:
     """Fenetre principale : un champ par variable du modele."""
@@ -22,6 +22,7 @@ class Interface:
         self._cadre_saisies = ttk.LabelFrame(self._racine, text="Vos habitudes", padding=10)
         self._cadre_saisies.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self._creer_champs()
+        self._creer_zone_resultat()
 
     def _creer_champs(self) -> None:
         """Cree une etiquette et un champ adapte au type de chaque variable."""
@@ -35,6 +36,24 @@ class Interface:
                 champ = ttk.Entry(self._cadre_saisies, width=22)
             champ.grid(row=ligne, column=1, sticky="w", padx=(10, 0), pady=3)
             self._champs[variable.nom] = champ
+    def _creer_zone_resultat(self) -> None:
+        """Cree le bouton Predire et l'etiquette qui affiche le resultat."""
+        cadre = ttk.Frame(self._racine, padding=(10, 0, 10, 10))
+        cadre.grid(row=1, column=0, sticky="nsew")
+        bouton = ttk.Button(cadre, text="Prédire", command=self._au_clic_predire)
+        bouton.grid(row=0, column=0, sticky="w")
+        self._etiquette_resultat = ttk.Label(cadre, text="", wraplength=380, justify="left")
+        self._etiquette_resultat.grid(row=1, column=0, sticky="w", pady=(10, 0))
+
+    def _au_clic_predire(self) -> None:
+        """Lit les champs, predit et affiche le resultat ou l'erreur en rouge."""
+        try:
+            gpa = self._application.predire(self.lire_saisies())
+        except DonneeInvalideError as erreur:
+            self._etiquette_resultat.config(text=str(erreur), foreground="red")
+            return
+        self._etiquette_resultat.config(text=self._application.decrire_resultat(gpa),
+                                        foreground="black")
 
     def lire_saisies(self) -> dict[str, str]:
         """Retourne {nom de colonne: texte du champ} pour toutes les variables."""
