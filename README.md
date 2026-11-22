@@ -16,7 +16,7 @@ https://www.kaggle.com/datasets/harishyadav0506/impact-of-social-media-on-life
 
 La licence est CC0 (domaine public), donc on a pu mettre le fichier directement dans "donnees/".
 
-Il y a 4 500 étudiants. On essaie de prédire "Academic_Performance_GPA" (entre 1,9 et 4,0) à partir de 7 colonnes : âge, niveau d'études, réseau social principal, heures par jour sur les réseaux, heures de sommeil, qualité du sommeil et stress perçu.
+Il y a un échantillon de 4500 étudiants. On essaie de prédire "Academic_Performance_GPA" (entre 1,9 et 4,0) à partir de 7 colonnes : âge, niveau d'études, réseau social principal, heures par jour sur les réseaux, heures de sommeil, qualité du sommeil et stress perçu.
 
 Ce qu'on a nettoyé :
 - 85 lignes n'avaient pas de GPA, on les a enlevées (sans la réponse, le modèle ne peut rien apprendre).
@@ -24,7 +24,7 @@ Ce qu'on a nettoyé :
 - On a enlevé "Gender" et "Weekend_Extra_Hours" parce qu'elles n'avaient aucun lien avec le GPA.
 - On n'a pas trouvé de valeurs impossibles (heures par jour entre 0,9 et 14, sommeil entre 3 et 10,5).
 
-Il reste 4 415 lignes après le nettoyage.
+On a supprimé 85 lignes, il reste donc 4415 lignes après le nettoyage.
 
 À noter : les données ont l'air synthétiques. Le GPA est bloqué à 4,0 et les heures par jour à 14.
 
