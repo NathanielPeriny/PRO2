@@ -109,8 +109,7 @@ On a mis un décorateur, "chronometrer", sur la méthode "entrainer()" : il affi
 
 ## Documentation consultée
 
-[à compléter : garder seulement celles qu'on a vraiment lues]
-- pandas "read_csv" : https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html
+
 - pandas "get_dummies" : https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html
 - scikit-learn "LinearRegression" : https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
 - scikit-learn "train_test_split" : https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
