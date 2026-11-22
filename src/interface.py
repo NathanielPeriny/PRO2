@@ -57,16 +57,7 @@ class Interface:
                               wraplength=800, justify="left", padding=10)
         etiquette.grid(row=2, column=0, columnspan=2, sticky="w")
 
-    def _au_clic_predire(self) -> None:
-        """Lit les champs, predit et affiche le resultat ou l'erreur en rouge."""
-        try:
-            gpa = self._application.predire(self.lire_saisies())
-        except DonneeInvalideError as erreur:
-            self._etiquette_resultat.config(text=str(erreur), foreground="red")
-            return
-        self._etiquette_resultat.config(text=self._application.decrire_resultat(gpa),
-                                        foreground="black")
-        self._afficher_graphique(gpa)
+   
 
     def _au_clic_predire(self) -> None:
         """Lit les champs, predit, enregistre et affiche le resultat ou l'erreur en rouge."""
