@@ -10,6 +10,7 @@ import joblib
 from matplotlib.figure import Figure
 from sklearn.linear_model import LinearRegression # le modele
 from sklearn.model_selection import train_test_split # ca split les donnees
+from typing import Callable
 
 from donnees import COLONNE_CIBLE, DOSSIER_FIGURES, charger_donnees, nettoyer_donnees
 
@@ -26,12 +27,12 @@ DESCRIPTIONS = {
     "Primary_Platform": "Réseau social principal",
     "Daily_Usage_Hours": "Heures par jour sur les réseaux sociaux",
     "Sleep_Duration_Hours": "Heures de sommeil par nuit",
-    "Sleep_Quality_Score": "Qualité du sommeil",
+    "Sleep_Quality_Score": "Qualité du sommeil ",
     "Perceived_Stress_Score": "Score de stress perçu",
 
 }
 
-def chronometrer(fonction):
+def chronometrer(fonction: Callable) -> Callable:
     """Decorateur qui mesure la duree d'execution d'une fonction.
 
        fonction : la fonction a chronometrer.
@@ -39,7 +40,8 @@ def chronometrer(fonction):
        duree dans la console et retourne son resultat sans le modifier.
        """
     @functools.wraps(fonction)
-    def enveloppe(*args, **kwargs):
+    def enveloppe(*args, **kwargs) -> object:
+        """Appelle la fonction, affiche sa duree et retourne son resultat."""
         debut = time.perf_counter()
         resultat = fonction(*args, **kwargs)
         duree = time.perf_counter() - debut

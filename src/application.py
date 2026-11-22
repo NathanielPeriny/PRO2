@@ -144,4 +144,5 @@ class Application:
         return figure
 
     def __repr__(self) -> str:
+        """Affichage technique : nombre de variables et MAE."""
         return f"Application({len(self._variables)} variables, MAE={self.mae:.3f})"

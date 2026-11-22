@@ -26,8 +26,8 @@ class Variable(ABC):
         """Texte affiche a l'utilisateur (lecture seule)."""
         return self._description
 
-    @abstractmethod  #oblique le __str__ a prendre ce que l'utilisateur ecrit (texte)
-    def valider(self, texte: str):
+    @abstractmethod  #oblique les enfants de variables a utiliser valider
+    def valider(self, texte: str) -> object:
         """Verifie la saisie et retourne la valeur convertie.
 
            texte : ce que l'utilisateur a tape ou choisi.
@@ -36,6 +36,7 @@ class Variable(ABC):
 
 
     def __str__(self) -> str:
+        """Texte affiche a l'utilisateur."""
         return self._description
 
 
@@ -46,6 +47,7 @@ class VariableNumerique(Variable):
     """Variable numerique avec un minimum et un maximum."""
 
     def __init__(self, nom: str, description: str, minimum: float, maximum: float) -> None:
+        """minimum, maximum : bornes acceptees pour la saisie."""
         super().__init__(nom, description)
         self._minimum = minimum
         self._maximum = maximum
@@ -66,9 +68,11 @@ class VariableNumerique(Variable):
         return valeur
 
     def __repr__(self) -> str:
+        """Affichage technique, pour le debogage."""
         return f"VariableNumerique({self._nom!r}, {self._minimum}, {self._maximum})" # !r met des "" autour du nom
     
     def __str__(self) -> str:
+        """Description avec l'intervalle accepte, ex. : Age (15 a 26)."""
         return f"{self._description} ({self._minimum:g} à {self._maximum:g})"
 
 
@@ -76,6 +80,7 @@ class VariableCategorielle(Variable):
     """Variable dont la valeur doit etre l'un des choix permis"""
 
     def __init__(self, nom: str, description: str, choix: list[str]) -> None:
+        """choix : valeurs permises (une copie est gardee)."""
         super().__init__(nom, description)
         self._choix = list(choix)
 
@@ -92,4 +97,5 @@ class VariableCategorielle(Variable):
         return texte
 
     def __repr__(self) -> str:
+        """Affichage technique, pour le debogage."""
         return f"VariableCategorielle({self._nom!r}, {self._choix})" #donne liste
